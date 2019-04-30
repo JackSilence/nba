@@ -78,7 +78,7 @@ public class Box implements IService {
 
 				String file = String.format( "data:image/png;base64,%s", DatatypeConverter.printBase64Binary( stream.toByteArray() ) );
 
-				String subject = String.format( "%s %s", box.get( i ), today );
+				String subject = String.format( "%s (%s)", box.get( i ), StringUtils.remove( today, "/" ) );
 
 				Map<?, ?> result = new Cloudinary().uploader().upload( file, ObjectUtils.asMap( "public_id", subject ) );
 
