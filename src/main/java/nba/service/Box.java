@@ -61,7 +61,7 @@ public class Box implements IService {
 		box.keySet().forEach( i -> {
 			driver.get( i );
 
-			( ( JavascriptExecutor ) driver ).executeScript( "$('#main-content').prepend('<span></span>');var $m=$('#main-content').html().match(/(<span(.*?))--/s);$m&&$('#main-content').html($m[1]);" );
+			( ( JavascriptExecutor ) driver ).executeScript( "$('#main-content').width(1000).prepend('<span></span>');var $m=$('#main-content').html().match(/(<span(.*?))--/s);$m&&$('#main-content').html($m[1]);" );
 
 			WebElement element = driver.findElement( By.cssSelector( "#main-content" ) );
 
