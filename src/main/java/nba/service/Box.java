@@ -12,6 +12,7 @@ import javax.imageio.ImageIO;
 import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.JavascriptExecutor;
@@ -51,7 +52,7 @@ public class Box implements IService {
 
 		driver.get( "https://www.ptt.cc/bbs/NBA/search?q=box" );
 
-		String today = new SimpleDateFormat( "MM/dd" ).format( new Date() );
+		String today = new SimpleDateFormat( "MM/dd" ).format( DateUtils.addDays( new Date(), -1 ) );
 
 		Map<String, String> box = new HashMap<>();
 
