@@ -63,7 +63,9 @@ public class Box implements IService {
 		box.keySet().forEach( i -> {
 			driver.get( i );
 
-			( ( JavascriptExecutor ) driver ).executeScript( "$('#main-content').width(1000).prepend('<span></span>');var $m=$('#main-content').html().match(/(<span(.*?))--/s);$m&&$('#main-content').html($m[1]);" );
+			script( driver, "$('div.article-metaline').remove(),$('#main-content').width(1e3).prepend('<span></span>');" );
+
+			script( driver, "var $m=$('#main-content').html().match(/(<span(.*?))--/s);$m&&$('#main-content').html($m[1]);" );
 
 			WebElement element = driver.findElement( By.cssSelector( "#main-content" ) );
 
@@ -84,7 +86,7 @@ public class Box implements IService {
 
 				Map<?, ?> result = new Cloudinary().uploader().upload( file, ObjectUtils.asMap( "public_id", subject ) );
 
-				service.send( subject, String.format( "<img src='%s'>", result.get( "secure_url" ) ).toString() );
+				service.send( subject, String.format( "<a href='%s'><img src='%s'></a>", i, result.get( "secure_url" ) ).toString() );
 
 			} catch ( IOException e ) {
 				log.error( "", e );
@@ -111,6 +113,10 @@ public class Box implements IService {
 		options.addArguments( "--headless", "--disable-gpu", "--window-size=1600,3840" );
 
 		return new ChromeDriver( options );
+	}
+
+	private void script( WebDriver driver, String script ) {
+		( ( JavascriptExecutor ) driver ).executeScript( script );
 	}
 
 	private WebElement find( WebElement element, String css ) {
