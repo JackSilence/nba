@@ -63,7 +63,7 @@ public class Box implements IService {
 		box.keySet().forEach( i -> {
 			driver.get( i );
 
-			script( driver, "$('div.article-metaline').remove(),$('#main-content').width(1e3).prepend('<span></span>');" );
+			script( driver, "$('div[class^=article-metaline]').remove(),$('#main-content').width(1e3).prepend('<span></span>');" );
 
 			script( driver, "var $m=$('#main-content').html().match(/(<span(.*?))--/s);$m&&$('#main-content').html($m[1]);" );
 
