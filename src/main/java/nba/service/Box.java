@@ -56,7 +56,7 @@ public class Box implements IService {
 		Map<String, String> box = new HashMap<>();
 
 		driver.findElements( By.cssSelector( "#main-container > div.r-list-container > div.r-ent" ) ).stream().filter( i -> {
-			return today.equals( StringUtils.leftPad( find( i, "div.meta > div.date" ).getText(), 5, "0" ) );
+			return "Rambo".equals( find( i, "div.meta > div.author" ).getText() ) && today.equals( StringUtils.leftPad( find( i, "div.meta > div.date" ).getText(), 5, "0" ) );
 
 		} ).map( i -> find( i, "div.title > a" ) ).forEach( i -> box.put( i.getAttribute( "href" ), i.getText() ) );
 
