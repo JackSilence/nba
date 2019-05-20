@@ -1,118 +1,57 @@
 package nba.service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.imageio.ImageIO;
-import javax.xml.bind.DatatypeConverter;
-
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Dimension;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.Point;
-import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
-
-import io.github.bonigarcia.wdm.WebDriverManager;
+import magic.service.IMailService;
+import magic.service.Selenium;
+import magic.util.Utils;
 
 @Service
-public class Box implements IService {
-	private final Logger log = LoggerFactory.getLogger( this.getClass() );
-
+public class Box extends Selenium<Map<String, String>> {
 	@Autowired
 	private IMailService service;
-
-	@Value( "${GOOGLE_CHROME_SHIM:}" )
-	private String bin;
 
 	@Override
 	@Scheduled( cron = "0 0 12,14 * * *" )
 	public void exec() {
-		WebDriver driver = init();
+		exec( "https://www.ptt.cc/bbs/NBA/search?q=box", new HashMap<>(), "--window-size=1600,3840" );
+	}
 
-		driver.get( "https://www.ptt.cc/bbs/NBA/search?q=box" );
-
+	@Override
+	protected void exec( WebDriver driver, Map<String, String> result ) {
 		String today = new SimpleDateFormat( "MM/dd" ).format( new Date() );
-
-		Map<String, String> box = new HashMap<>();
 
 		driver.findElements( By.cssSelector( "#main-container > div.r-list-container > div.r-ent" ) ).stream().filter( i -> {
 			return "Rambo".equals( find( i, "div.meta > div.author" ).getText() ) && today.equals( StringUtils.leftPad( find( i, "div.meta > div.date" ).getText(), 5, "0" ) );
 
-		} ).map( i -> find( i, "div.title > a" ) ).forEach( i -> box.put( i.getAttribute( "href" ), i.getText() ) );
+		} ).map( i -> find( i, "div.title > a" ) ).forEach( i -> result.put( i.getAttribute( "href" ), i.getText() ) );
 
-		box.keySet().forEach( i -> {
+		result.keySet().forEach( i -> {
 			driver.get( i );
 
 			script( driver, "$('div[class^=article-metaline]').remove(),$('#main-content').width(1e3).prepend('<span></span>');" );
 
 			script( driver, "var $m=$('#main-content').html().match(/(<span(.*?))--/s);$m&&$('#main-content').html($m[1]);" );
 
-			WebElement element = driver.findElement( By.cssSelector( "#main-content" ) );
+			String subject = String.format( "%s (%s)", result.get( i ), StringUtils.remove( today, "/" ) );
 
-			File screenshot = ( ( TakesScreenshot ) driver ).getScreenshotAs( OutputType.FILE );
+			String url = Utils.upload( base64( screenshot( driver, driver.findElement( By.cssSelector( "#main-content" ) ) ) ), subject );
 
-			Point point = element.getLocation();
+			service.send( subject, String.format( "<a href='%s'><img src='%s'></a>", i, url ) );
 
-			Dimension size = element.getSize();
-
-			int x = point.getX(), y = point.getY(), width = size.getWidth(), height = size.getHeight();
-
-			try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-				ImageIO.write( ImageIO.read( screenshot ).getSubimage( x, y, width, height ), "png", stream );
-
-				String file = String.format( "data:image/png;base64,%s", DatatypeConverter.printBase64Binary( stream.toByteArray() ) );
-
-				String subject = String.format( "%s (%s)", box.get( i ), StringUtils.remove( today, "/" ) );
-
-				Map<?, ?> result = new Cloudinary().uploader().upload( file, ObjectUtils.asMap( "public_id", subject ) );
-
-				service.send( subject, String.format( "<a href='%s'><img src='%s'></a>", i, result.get( "secure_url" ) ).toString() );
-
-			} catch ( IOException e ) {
-				log.error( "", e );
-
-			}
 		} );
-
-		driver.quit();
-	}
-
-	private WebDriver init() {
-		ChromeOptions options = new ChromeOptions();
-
-		if ( bin.isEmpty() ) {
-			WebDriverManager.chromedriver().setup();
-
-		} else {
-			System.setProperty( "webdriver.chrome.driver", "/app/.chromedriver/bin/chromedriver" );
-
-			options.setBinary( bin );
-
-		}
-
-		options.addArguments( "--headless", "--disable-gpu", "--window-size=1600,3840" );
-
-		return new ChromeDriver( options );
 	}
 
 	private void script( WebDriver driver, String script ) {
