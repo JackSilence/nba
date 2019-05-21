@@ -19,33 +19,37 @@ import magic.service.Selenium;
 import magic.util.Utils;
 
 @Service
-public class Box extends Selenium<Map<String, String>> {
+public class Box extends Selenium {
 	@Autowired
 	private IMailService service;
 
 	@Override
 	@Scheduled( cron = "0 0 12,14 * * *" )
 	public void exec() {
-		exec( "https://www.ptt.cc/bbs/NBA/search?q=box", new HashMap<>(), "--window-size=1600,3840" );
+		exec( "--window-size=1600,3840" );
 	}
 
 	@Override
-	protected void exec( WebDriver driver, Map<String, String> result ) {
+	protected void exec( WebDriver driver ) {
+		driver.get( "https://www.ptt.cc/bbs/NBA/search?q=box" );
+
 		String today = new SimpleDateFormat( "MM/dd" ).format( new Date() );
+
+		Map<String, String> box = new HashMap<>();
 
 		driver.findElements( By.cssSelector( "#main-container > div.r-list-container > div.r-ent" ) ).stream().filter( i -> {
 			return "Rambo".equals( find( i, "div.meta > div.author" ).getText() ) && today.equals( StringUtils.leftPad( find( i, "div.meta > div.date" ).getText(), 5, "0" ) );
 
-		} ).map( i -> find( i, "div.title > a" ) ).forEach( i -> result.put( i.getAttribute( "href" ), i.getText() ) );
+		} ).map( i -> find( i, "div.title > a" ) ).forEach( i -> box.put( i.getAttribute( "href" ), i.getText() ) );
 
-		result.keySet().forEach( i -> {
+		box.keySet().forEach( i -> {
 			driver.get( i );
 
 			script( driver, "$('div[class^=article-metaline]').remove(),$('#main-content').width(1e3).prepend('<span></span>');" );
 
 			script( driver, "var $m=$('#main-content').html().match(/(<span(.*?))--/s);$m&&$('#main-content').html($m[1]);" );
 
-			String subject = String.format( "%s (%s)", result.get( i ), StringUtils.remove( today, "/" ) );
+			String subject = String.format( "%s (%s)", box.get( i ), StringUtils.remove( today, "/" ) );
 
 			String url = Utils.upload( base64( screenshot( driver, driver.findElement( By.cssSelector( "#main-content" ) ) ) ), subject );
 
