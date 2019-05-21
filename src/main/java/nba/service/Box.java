@@ -26,11 +26,11 @@ public class Box extends Selenium {
 	@Override
 	@Scheduled( cron = "0 0 12,14 * * *" )
 	public void exec() {
-		exec( "--window-size=1600,3840" );
+		run( "--window-size=1600,3840" );
 	}
 
 	@Override
-	protected void exec( WebDriver driver ) {
+	protected void run( WebDriver driver ) {
 		driver.get( "https://www.ptt.cc/bbs/NBA/search?q=box" );
 
 		String today = new SimpleDateFormat( "MM/dd" ).format( new Date() );
