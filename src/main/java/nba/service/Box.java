@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -35,7 +34,7 @@ public class Box extends Selenium {
 
 		Map<String, String> box = new HashMap<>();
 
-		driver.findElements( By.cssSelector( "#main-container > div.r-list-container > div.r-ent" ) ).stream().filter( i -> {
+		list( driver, "#main-container > div.r-list-container > div.r-ent" ).stream().filter( i -> {
 			return "Rambo".equals( find( i, "div.meta > div.author" ).getText() ) && today.equals( StringUtils.leftPad( find( i, "div.meta > div.date" ).getText(), 5, "0" ) );
 
 		} ).map( i -> find( i, "div.title > a" ) ).forEach( i -> box.put( i.getAttribute( "href" ), i.getText() ) );
@@ -49,7 +48,7 @@ public class Box extends Selenium {
 
 			String subject = String.format( "%s (%s)", box.get( i ), StringUtils.remove( today, "/" ) );
 
-			String url = Utils.upload( base64( screenshot( driver, driver.findElement( By.cssSelector( "#main-content" ) ) ) ), subject );
+			String url = Utils.upload( base64( screenshot( driver, find( driver, "#main-content" ) ) ), subject );
 
 			service.send( subject, String.format( "<a href='%s'><img src='%s'></a>", i, url ) );
 
