@@ -7,9 +7,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -56,13 +54,5 @@ public class Box extends Selenium {
 			service.send( subject, String.format( "<a href='%s'><img src='%s'></a>", i, url ) );
 
 		} );
-	}
-
-	private void script( WebDriver driver, String script ) {
-		( ( JavascriptExecutor ) driver ).executeScript( script );
-	}
-
-	private WebElement find( WebElement element, String css ) {
-		return element.findElement( By.cssSelector( css ) );
 	}
 }
