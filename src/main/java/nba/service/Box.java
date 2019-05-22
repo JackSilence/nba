@@ -35,9 +35,12 @@ public class Box extends Selenium {
 		Map<String, String> box = new HashMap<>();
 
 		list( driver, "#main-container > div.r-list-container > div.r-ent" ).stream().filter( i -> {
-			return "Rambo".equals( find( i, "div.meta > div.author" ).getText() ) && today.equals( StringUtils.leftPad( find( i, "div.meta > div.date" ).getText(), 5, "0" ) );
+			return today.equals( StringUtils.leftPad( find( i, "div.meta > div.date" ).getText(), 5, "0" ) );
 
-		} ).map( i -> find( i, "div.title > a" ) ).forEach( i -> box.put( i.getAttribute( "href" ), i.getText() ) );
+		} ).map( i -> find( i, "div.title > a" ) ).filter( i -> i.getText().startsWith( "[BOX ]" ) ).forEach( i -> {
+			box.put( i.getAttribute( "href" ), i.getText() );
+
+		} );
 
 		box.keySet().forEach( i -> {
 			driver.get( i );
