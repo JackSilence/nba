@@ -1,2 +1,5 @@
 app:
   name: NBA
+logging:
+  pattern:
+    console: "[%d] %p %C{0}:%L - %m%n"
