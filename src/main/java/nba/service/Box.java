@@ -45,6 +45,8 @@ public class Box extends Selenium {
 
 		} );
 
+		log.info( "Box: " + box );
+
 		box.keySet().forEach( i -> {
 			driver.get( i );
 
