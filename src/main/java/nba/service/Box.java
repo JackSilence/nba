@@ -11,12 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import magic.service.Cloudinary;
 import magic.service.IMailService;
 import magic.service.Selenium;
-import magic.util.Utils;
 
 @Service
 public class Box extends Selenium {
+	@Autowired
+	private Cloudinary cloudinary;
+
 	@Autowired
 	private IMailService service;
 
@@ -51,7 +54,7 @@ public class Box extends Selenium {
 
 			String subject = String.format( "%s (%s)", box.get( i ), StringUtils.remove( today, "/" ) );
 
-			String url = Utils.upload( base64( screenshot( driver, find( driver, "#main-content" ) ) ), subject );
+			String url = cloudinary.upload( base64( screenshot( driver, find( driver, "#main-content" ) ) ), subject );
 
 			service.send( subject, String.format( "<a href='%s'><img src='%s'></a>", i, url ) );
 
