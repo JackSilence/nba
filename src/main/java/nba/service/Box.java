@@ -43,7 +43,7 @@ public class Box extends Selenium {
 	protected synchronized void run( WebDriver driver ) {
 		driver.get( "https://www.ptt.cc/bbs/NBA/search?q=box" );
 
-		String date = StringUtils.defaultString( this.date, new SimpleDateFormat( DATE_FORMAT ).format( new Date() ) );
+		String date = StringUtils.defaultIfBlank( this.date, new SimpleDateFormat( DATE_FORMAT ).format( new Date() ) );
 
 		setDate( null ); // reset
 
