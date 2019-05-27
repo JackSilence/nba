@@ -1,12 +1,13 @@
 package nba.service;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.openqa.selenium.WebDriver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,15 +19,17 @@ import magic.service.Selenium;
 
 @Service
 public class Box extends Selenium {
+	private static final String DATE_FORMAT = "MM/dd";
+
 	@Autowired
 	private Cloudinary cloudinary;
 
 	@Autowired
 	private IMailService service;
 
-	private Date date;
+	private String date;
 
-	public void setDate( Date date ) {
+	public void setDate( String date ) {
 		this.date = date;
 	}
 
@@ -40,9 +43,17 @@ public class Box extends Selenium {
 	protected synchronized void run( WebDriver driver ) {
 		driver.get( "https://www.ptt.cc/bbs/NBA/search?q=box" );
 
-		String date = new SimpleDateFormat( "MM/dd" ).format( ObjectUtils.defaultIfNull( this.date, new Date() ) );
+		String date = StringUtils.defaultString( this.date, new SimpleDateFormat( DATE_FORMAT ).format( new Date() ) );
 
 		setDate( null ); // reset
+
+		try {
+			DateUtils.parseDateStrictly( date, DATE_FORMAT );
+
+		} catch ( ParseException e ) {
+			throw new RuntimeException( e );
+
+		}
 
 		Map<String, String> box = new HashMap<>();
 
