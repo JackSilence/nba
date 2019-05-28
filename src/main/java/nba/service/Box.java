@@ -22,7 +22,7 @@ import net.gpedro.integrations.slack.SlackMessage;
 
 @Service
 public class Box extends Selenium {
-	private static final String DATE_FORMAT = "MM/dd";
+	private static final String DATE_FORMAT = "MM/dd", BOX = "[BOX ]";
 
 	@Autowired
 	private Cloudinary cloudinary;
@@ -63,7 +63,7 @@ public class Box extends Selenium {
 		list( driver, "#main-container > div.r-list-container > div.r-ent" ).stream().filter( i -> {
 			return date.equals( StringUtils.leftPad( find( i, "div.meta > div.date" ).getText(), 5, "0" ) );
 
-		} ).map( i -> find( i, "div.title > a" ) ).filter( i -> i.getText().startsWith( "[BOX ]" ) ).forEach( i -> {
+		} ).map( i -> find( i, "div.title > a" ) ).filter( i -> i.getText().startsWith( BOX ) ).forEach( i -> {
 			box.put( i.getAttribute( "href" ), i.getText() );
 
 		} );
@@ -85,7 +85,7 @@ public class Box extends Selenium {
 
 			service.send( title, String.format( "<a href='%s'><img src='%s'></a>", i, url ) );
 
-			message.addAttachments( new SlackAttachment( title ).setTitle( title ).setTitleLink( i ).setImageUrl( url ) );
+			message.addAttachments( new SlackAttachment( title ).setTitle( StringUtils.remove( title, BOX ) ).setTitleLink( i ).setImageUrl( url ) );
 		} );
 
 		slack.call( message );
