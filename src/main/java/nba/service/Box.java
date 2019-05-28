@@ -16,6 +16,9 @@ import org.springframework.stereotype.Service;
 import magic.service.Cloudinary;
 import magic.service.IMailService;
 import magic.service.Selenium;
+import magic.util.Utils;
+import net.gpedro.integrations.slack.SlackAttachment;
+import net.gpedro.integrations.slack.SlackMessage;
 
 @Service
 public class Box extends Selenium {
@@ -67,6 +70,8 @@ public class Box extends Selenium {
 
 		log.info( "Date: {}, box: {}", date, box );
 
+		SlackMessage message = new SlackMessage( Utils.subject( "NBA比賽結果" ) );
+
 		box.keySet().forEach( i -> {
 			driver.get( i );
 
@@ -74,12 +79,15 @@ public class Box extends Selenium {
 
 			script( driver, "var $m=$('#main-content').html().match(/(<span(.*?))--/s);$m&&$('#main-content').html($m[1]);" );
 
-			String subject = String.format( "%s (%s)", box.get( i ), StringUtils.remove( date, "/" ) );
+			String title = String.format( "%s (%s)", box.get( i ), StringUtils.remove( date, "/" ) );
 
-			String url = cloudinary.upload( base64( screenshot( driver, find( driver, "#main-content" ) ) ), subject );
+			String url = cloudinary.upload( base64( screenshot( driver, find( driver, "#main-content" ) ) ), title );
 
-			service.send( subject, String.format( "<a href='%s'><img src='%s'></a>", i, url ) );
+			service.send( title, String.format( "<a href='%s'><img src='%s'></a>", i, url ) );
 
+			message.addAttachments( new SlackAttachment( title ).setTitle( title ).setTitleLink( i ).setImageUrl( url ) );
 		} );
+
+		slack.call( message );
 	}
 }
