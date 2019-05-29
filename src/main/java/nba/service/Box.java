@@ -70,7 +70,7 @@ public class Box extends Selenium {
 
 		log.info( "Date: {}, box: {}", date, box );
 
-		SlackMessage message = new SlackMessage( Utils.subject( "NBA比賽結果" ) );
+		SlackMessage message = new SlackMessage( Utils.subject( box.isEmpty() ? date + "查無NBA賽事" : "NBA比賽結果" ) );
 
 		box.keySet().forEach( i -> {
 			driver.get( i );
