@@ -14,9 +14,9 @@ public class ExecuteController extends magic.controller.ExecuteController {
 	private Box box;
 
 	@Override
-	public Map<String, String> execute( @PathVariable String name, String text ) {
+	public Map<String, String> execute( @PathVariable String name, String command, String text ) {
 		box.setDate( text );
 
-		return super.execute( name, text );
+		return super.execute( name, command, text );
 	}
 }

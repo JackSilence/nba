@@ -17,7 +17,7 @@ repositories {
 }
 
 dependencies {
-	compile('com.github.JackSilence:magic:453481b7aa')
+	compile('com.github.JackSilence:magic:ad09e12e1f')
 	
 	compile('com.sendgrid:sendgrid-java:4.0.1')
 }
