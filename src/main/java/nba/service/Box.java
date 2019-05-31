@@ -22,7 +22,7 @@ import net.gpedro.integrations.slack.SlackMessage;
 
 @Service
 public class Box extends Selenium {
-	private static final String DATE_FORMAT = "MM/dd";
+	private static final String DATE_FORMAT = "MM/dd", NOT_FOUND = "404 - Not Found.";
 
 	@Autowired
 	private Cloudinary cloudinary;
@@ -72,7 +72,12 @@ public class Box extends Selenium {
 
 		SlackMessage message = new SlackMessage( Utils.subject( box.isEmpty() ? date + "查無NBA賽事" : "NBA比賽結果" ) );
 
-		box.keySet().forEach( i -> {
+		for ( String i : box.keySet() ) {
+			if ( NOT_FOUND.equals( find( driver, "html" ).getText() ) ) {
+				continue;
+
+			}
+
 			driver.get( i );
 
 			script( driver, "$('div[class^=article-metaline]').remove(),$('#main-content').width(1e3).prepend('<span></span>');" );
@@ -86,7 +91,7 @@ public class Box extends Selenium {
 			service.send( title, String.format( "<a href='%s'><img src='%s'></a>", i, url ) );
 
 			message.addAttachments( new SlackAttachment( title ).setTitle( title ).setTitleLink( i ).setImageUrl( url ) );
-		} );
+		}
 
 		slack.call( message );
 	}
