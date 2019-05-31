@@ -9,6 +9,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,7 @@ import net.gpedro.integrations.slack.SlackMessage;
 
 @Service
 public class Box extends Selenium {
-	private static final String DATE_FORMAT = "MM/dd", NOT_FOUND = "404 - Not Found.";
+	private static final String DATE_FORMAT = "MM/dd";
 
 	@Autowired
 	private Cloudinary cloudinary;
@@ -73,12 +74,16 @@ public class Box extends Selenium {
 		SlackMessage message = new SlackMessage( Utils.subject( box.isEmpty() ? date + "查無NBA賽事" : "NBA比賽結果" ) );
 
 		for ( String i : box.keySet() ) {
-			if ( NOT_FOUND.equals( find( driver, "html" ).getText() ) ) {
+			driver.get( i );
+
+			WebElement element = find( driver, "div.bbs-screen" );
+
+			if ( StringUtils.isEmpty( element.getAttribute( "id" ) ) ) {
+				log.error( "Url: {}, text: {}", i, element.getText() );
+
 				continue;
 
 			}
-
-			driver.get( i );
 
 			script( driver, "$('div[class^=article-metaline]').remove(),$('#main-content').width(1e3).prepend('<span></span>');" );
 
