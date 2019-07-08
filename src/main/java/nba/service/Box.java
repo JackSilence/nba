@@ -74,24 +74,26 @@ public class Box extends Selenium {
 		SlackMessage message = new SlackMessage( Utils.subject( box.isEmpty() ? date + "查無NBA賽事" : "NBA比賽結果" ) );
 
 		for ( String i : box.keySet() ) {
-			driver.get( i );
+			String title = String.format( "%s (%s)", box.get( i ), StringUtils.remove( date, "/" ) ), url;
 
-			WebElement element = find( driver, "div.bbs-screen" );
+			if ( ( url = cloudinary.explicit( title ) ).isEmpty() ) {
+				driver.get( i );
 
-			if ( StringUtils.isEmpty( element.getAttribute( "id" ) ) ) {
-				log.error( "Url: {}, text: {}", i, element.getText() );
+				WebElement element = find( driver, "div.bbs-screen" );
 
-				continue;
+				if ( StringUtils.isEmpty( element.getAttribute( "id" ) ) ) {
+					log.error( "Url: {}, text: {}", i, element.getText() );
 
+					continue;
+
+				}
+
+				script( driver, "$('div[class^=article-metaline]').remove(),$('#main-content').width(1e3).prepend('<span></span>');" );
+
+				script( driver, "var $m=$('#main-content').html().match(/(<span(.*?))--/s);$m&&$('#main-content').html($m[1]);" );
+
+				url = cloudinary.upload( base64( screenshot( driver, find( driver, "#main-content" ) ) ), title );
 			}
-
-			script( driver, "$('div[class^=article-metaline]').remove(),$('#main-content').width(1e3).prepend('<span></span>');" );
-
-			script( driver, "var $m=$('#main-content').html().match(/(<span(.*?))--/s);$m&&$('#main-content').html($m[1]);" );
-
-			String title = String.format( "%s (%s)", box.get( i ), StringUtils.remove( date, "/" ) );
-
-			String url = cloudinary.upload( base64( screenshot( driver, find( driver, "#main-content" ) ) ), title );
 
 			service.send( title, String.format( "<a href='%s'><img src='%s'></a>", i, url ) );
 
