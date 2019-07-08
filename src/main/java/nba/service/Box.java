@@ -75,10 +75,10 @@ public class Box extends Selenium {
 
 		for ( String i : box.keySet() ) {
 			String title = String.format( "%s (%s)", box.get( i ), StringUtils.remove( date, "/" ) ), url;
-log.info( "Exists: {}", cloudinary.explicit( title ) );
+
 			if ( ( url = cloudinary.explicit( title ) ).isEmpty() ) {
 				driver.get( i );
-log.info( "GoGoGo: {}", title );
+
 				WebElement element = find( driver, "div.bbs-screen" );
 
 				if ( StringUtils.isEmpty( element.getAttribute( "id" ) ) ) {
