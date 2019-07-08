@@ -78,7 +78,7 @@ public class Box extends Selenium {
 log.info( "Exists: {}", cloudinary.explicit( title ) );
 			if ( ( url = cloudinary.explicit( title ) ).isEmpty() ) {
 				driver.get( i );
-log.info( "GoGoGo!!!!!!!!" );
+log.info( "GoGoGo: {}", title );
 				WebElement element = find( driver, "div.bbs-screen" );
 
 				if ( StringUtils.isEmpty( element.getAttribute( "id" ) ) ) {
