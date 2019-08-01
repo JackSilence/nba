@@ -45,7 +45,7 @@ public class Box extends Selenium {
 
 	@Override
 	protected synchronized void run( WebDriver driver ) {
-		String date = StringUtils.defaultIfBlank( this.date, new SimpleDateFormat( DATE_FORMAT ).format( new Date() ) );
+		String today = new SimpleDateFormat( DATE_FORMAT ).format( new Date() ), date = StringUtils.defaultIfBlank( this.date, today );
 
 		setDate( null ); // reset
 
@@ -59,7 +59,9 @@ public class Box extends Selenium {
 
 		Map<String, String> box = new HashMap<>();
 
-		for ( int i = 1; i <= 10; i++ ) {
+		int max = date.equals( today ) ? 1 : 10;
+
+		for ( int i = 1; i <= max; i++ ) {
 			driver.get( "https://www.ptt.cc/bbs/NBA/search?q=box&page=" + i );
 
 			log.info( "Page: " + i );
