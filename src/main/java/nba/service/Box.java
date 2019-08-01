@@ -13,6 +13,7 @@ import org.openqa.selenium.WebElement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import magic.service.Cloudinary;
 import magic.service.IMailService;
@@ -31,10 +32,10 @@ public class Box extends Selenium {
 	@Autowired
 	private IMailService service;
 
-	private String date;
+	private String text;
 
-	public void setDate( String date ) {
-		this.date = date;
+	public void setText( String text ) {
+		this.text = text;
 	}
 
 	@Override
@@ -45,14 +46,20 @@ public class Box extends Selenium {
 
 	@Override
 	protected synchronized void run( WebDriver driver ) {
-		driver.get( "https://www.ptt.cc/bbs/NBA/search?q=box" );
+		String today = new SimpleDateFormat( DATE_FORMAT ).format( new Date() ), date;
 
-		String date = StringUtils.defaultIfBlank( this.date, new SimpleDateFormat( DATE_FORMAT ).format( new Date() ) );
+		String text = StringUtils.defaultIfEmpty( this.text, text( today, 1 ) );
 
-		setDate( null ); // reset
+		String[] params = StringUtils.split( text.contains( StringUtils.SPACE ) ? text : text( text, 1 ) );
+
+		Assert.isTrue( params.length == 2, "參數個數有誤: " + this.text );
+
+		driver.get( "https://www.ptt.cc/bbs/NBA/search?q=box&page=" + params[ 1 ] );
+
+		setText( null ); // reset
 
 		try {
-			DateUtils.parseDateStrictly( date, DATE_FORMAT );
+			DateUtils.parseDateStrictly( date = params[ 0 ], DATE_FORMAT );
 
 		} catch ( ParseException e ) {
 			throw new RuntimeException( e );
@@ -101,5 +108,9 @@ public class Box extends Selenium {
 		}
 
 		slack.call( message );
+	}
+
+	private String text( String date, int page ) {
+		return String.format( "%s %d", date, page );
 	}
 }

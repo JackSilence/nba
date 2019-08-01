@@ -13,7 +13,7 @@ public class ExecuteController extends magic.controller.ExecuteController {
 
 	@Override
 	public String execute( @PathVariable String name, String command, String text ) {
-		box.setDate( text );
+		box.setText( text );
 
 		return super.execute( name, command, text );
 	}
