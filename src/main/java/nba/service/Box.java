@@ -13,7 +13,6 @@ import org.openqa.selenium.WebElement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import magic.service.Cloudinary;
 import magic.service.IMailService;
@@ -32,10 +31,10 @@ public class Box extends Selenium {
 	@Autowired
 	private IMailService service;
 
-	private String text;
+	private String date;
 
-	public void setText( String text ) {
-		this.text = text;
+	public void setDate( String date ) {
+		this.date = date;
 	}
 
 	@Override
@@ -46,20 +45,12 @@ public class Box extends Selenium {
 
 	@Override
 	protected synchronized void run( WebDriver driver ) {
-		String today = new SimpleDateFormat( DATE_FORMAT ).format( new Date() ), date;
+		String date = StringUtils.defaultIfBlank( this.date, new SimpleDateFormat( DATE_FORMAT ).format( new Date() ) );
 
-		String text = StringUtils.defaultIfEmpty( this.text, text( today, 1 ) );
-
-		String[] params = StringUtils.split( text.contains( StringUtils.SPACE ) ? text : text( text, 1 ) );
-
-		Assert.isTrue( params.length == 2, "參數個數有誤: " + this.text );
-
-		driver.get( "https://www.ptt.cc/bbs/NBA/search?q=box&page=" + params[ 1 ] );
-
-		setText( null ); // reset
+		setDate( null ); // reset
 
 		try {
-			DateUtils.parseDateStrictly( date = params[ 0 ], DATE_FORMAT );
+			DateUtils.parseDateStrictly( date, DATE_FORMAT );
 
 		} catch ( ParseException e ) {
 			throw new RuntimeException( e );
@@ -68,13 +59,24 @@ public class Box extends Selenium {
 
 		Map<String, String> box = new HashMap<>();
 
-		list( driver, "#main-container > div.r-list-container > div.r-ent" ).stream().filter( i -> {
-			return date.equals( StringUtils.leftPad( find( i, "div.meta > div.date" ).getText(), 5, "0" ) );
+		for ( int i = 1; i <= 10; i++ ) {
+			driver.get( "https://www.ptt.cc/bbs/NBA/search?q=box&page=" + i );
 
-		} ).map( i -> find( i, "div.title > a" ) ).filter( i -> i.getText().startsWith( "[BOX ]" ) ).forEach( i -> {
-			box.put( i.getAttribute( "href" ), i.getText() );
+			log.info( "Page: " + i );
 
-		} );
+			list( driver, "#main-container > div.r-list-container > div.r-ent" ).stream().filter( j -> {
+				return date.equals( StringUtils.leftPad( find( j, "div.meta > div.date" ).getText(), 5, "0" ) );
+
+			} ).map( j -> find( j, "div.title > a" ) ).filter( j -> j.getText().startsWith( "[BOX ]" ) ).forEach( j -> {
+				box.put( j.getAttribute( "href" ), j.getText() );
+
+			} );
+
+			if ( !box.isEmpty() ) {
+				break;
+
+			}
+		}
 
 		log.info( "Date: {}, box: {}", date, box );
 
@@ -108,9 +110,5 @@ public class Box extends Selenium {
 		}
 
 		slack.call( message );
-	}
-
-	private String text( String date, int page ) {
-		return String.format( "%s %d", date, page );
 	}
 }
