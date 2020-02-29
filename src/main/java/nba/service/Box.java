@@ -52,7 +52,7 @@ public class Box extends Selenium {
 			DateUtils.parseDateStrictly( Year.now().getValue() + date, "yyyyMM/dd" );
 
 		} catch ( ParseException e ) {
-			throw new RuntimeException( e );
+			throw new RuntimeException( "日期有誤: " + date );
 
 		}
 
