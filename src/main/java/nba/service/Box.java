@@ -2,6 +2,7 @@ package nba.service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Year;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,8 +24,6 @@ import net.gpedro.integrations.slack.SlackMessage;
 
 @Service
 public class Box extends Selenium {
-	private static final String DATE_FORMAT = "MM/dd";
-
 	@Autowired
 	private Cloudinary cloudinary;
 
@@ -45,12 +44,12 @@ public class Box extends Selenium {
 
 	@Override
 	protected synchronized void run( WebDriver driver ) {
-		String today = new SimpleDateFormat( DATE_FORMAT ).format( new Date() ), date = StringUtils.defaultIfBlank( this.date, today );
+		String today = new SimpleDateFormat( "MM/dd" ).format( new Date() ), date = StringUtils.defaultIfBlank( this.date, today );
 
 		setDate( null ); // reset
 
 		try {
-			DateUtils.parseDateStrictly( date, DATE_FORMAT );
+			DateUtils.parseDateStrictly( Year.now().getValue() + date, "yyyyMM/dd" );
 
 		} catch ( ParseException e ) {
 			throw new RuntimeException( e );
