@@ -108,7 +108,7 @@ public class Box extends Selenium {
 					service.send( title, String.format( "<a href='%s'><img src='%s'></a>", i, url ) ); // 原本不存在才發信
 
 				} catch ( RuntimeException e ) {
-					log.error( String.format( "Url: %s, text: %s", i, element.getText() ), e );
+					log.error( String.format( "Url: %s, title: %s", i, title ), e );
 
 					continue;
 				}
