@@ -102,9 +102,16 @@ public class Box extends Selenium {
 
 				script( driver, "var $m=$('#main-content').html().match(/(<span(.*?))--/s);$m&&$('#main-content').html($m[1]);" );
 
-				url = cloudinary.upload( base64( screenshot( driver, find( driver, "#main-content" ) ) ), title );
+				try {
+					url = cloudinary.upload( base64( screenshot( driver, find( driver, "#main-content" ) ) ), title );
 
-				service.send( title, String.format( "<a href='%s'><img src='%s'></a>", i, url ) ); // 原本不存在才發信
+					service.send( title, String.format( "<a href='%s'><img src='%s'></a>", i, url ) ); // 原本不存在才發信
+
+				} catch ( RuntimeException e ) {
+					log.error( String.format( "Url: {}, text: {}", i, element.getText() ), e );
+
+					continue;
+				}
 			}
 
 			message.addAttachments( new SlackAttachment( title ).setTitle( title ).setTitleLink( i ).setImageUrl( url ) );
